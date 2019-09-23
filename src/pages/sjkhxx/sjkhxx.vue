@@ -7,7 +7,14 @@
           <van-radio name="同行">同行</van-radio>
           <van-radio name="直客">直客</van-radio>
         </van-radio-group>
+        <van-cell title="单元格" @click="showPopup" value="内容" size="large" />
+        <van-popup
+          v-model="show"
+          position="bottom"
+          :style="{ height: '270px' }"
+        >
         <van-area :area-list="areaList" :columns-num="2" :value="addr" @confirm="handleConfirm" />
+        </van-popup>
         <ul class="h5-form-box" id="form">
           <li v-for="(item, index) in searchList" :key="index" :class="{'error': item.error}">
             <span :class="item.icon"></span>
@@ -55,6 +62,7 @@ export default {
   name: 'home',
   data () {
     return {
+      show: false,
       fileList: [],
       addr: '310000',
       city: '',
@@ -758,6 +766,9 @@ export default {
         this.province = areaList[0].name
         this.city = areaList[1].name
       }
+    },
+    showPopup () {
+      this.show = true
     },
     afterRead (file) {
       // 此时可以自行将文件上传至服务器
