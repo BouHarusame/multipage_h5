@@ -35,7 +35,7 @@
             </template>
             <template v-else-if="item.type === 'upload'">
               <span class="label">{{item.title}}</span>
-              <van-uploader v-model="item.value" multiple :after-read="afterRead"/>
+              <van-uploader v-model="item.value" multiple @delete="handleDelete" :after-read="afterRead"/>
             </template>
             <template v-else>
               <span class="label">{{item.title}}</span>
@@ -743,7 +743,7 @@ export default {
           989400: '赞比亚'
         }
       },
-      cardIds: '',
+      cardIds: [],
       intention: '',
       clientType: '',
       errorMessage: '',
@@ -830,6 +830,9 @@ export default {
       }
       this.show = false
     },
+    handleDelete (file, detail) {
+      this.cardIds.splice(detail.index, 1)
+    },
     handleCancel () {
       this.show = false
     },
@@ -839,14 +842,12 @@ export default {
     afterRead (file) {
       // 此时可以自行将文件上传至服务器
       let formData = new FormData()
-      // console.log(file)
       formData.append('file', file ? file.file : '')
       // console.log(formData)
       $http('post', `/mini/import/collection/attach`, formData)
         .then(res => {
           if (res.msg === 'success') {
-            console.log('success', res)
-            this.cardIds = res.data
+            this.cardIds.push(res.data)
           }
           if (res.msg === 'fail') {
             console.log('fail')
@@ -897,28 +898,29 @@ export default {
       params.province = this.province
       params.city = this.city
       params.cardIds = this.cardIds
-      console.log(params, isError)
-      // if (this.flag && !isError) {
-      //   this.flag = false
-      //   $http('post', '/mini/import/collection', params)
-      //     .then(res => {
-      //       if (res && res.msg === 'success') {
-      //         this.successMessage = '操作成功'
-      //       }
-      //       if (res && res.msg === 'fail') {
-      //         // this.$message.error(res.verror)
-      //         this.errorMessage = res.verror
-      //         setTimeout(() => {
-      //           this.errorMessage = ''
-      //         }, 3000)
-      //       }
-      //       this.flag = true
-      //       this.loading = false
-      //     })
-      //     .catch(err => {
-      //       console.error(err)
-      //     })
-      // }
+      // console.log(params, isError)
+      if (this.flag && !isError) {
+        this.flag = false
+        $http('post', '/mini/import/collection', params)
+          .then(res => {
+            if (res && res.msg === 'success') {
+              this.successMessage = '操作成功'
+            }
+            if (res && res.msg === 'fail') {
+              // this.$message.error(res.verror)
+              this.errorMessage = res.verror
+              setTimeout(() => {
+                this.errorMessage = ''
+              }, 3000)
+            }
+            this.flag = true
+            this.loading = false
+          })
+          .catch(err => {
+            this.flag = true
+            console.error(err)
+          })
+      }
     }
   }
 }
@@ -931,6 +933,7 @@ export default {
   background: #1E3757 url('./images/bg.png') repeat;
   padding-bottom: 25px;
   overflow: hidden;
+  min-height: 100vh;
   font-family: Helvetica Neue,Helvetica,PingFang SC,Hiragino Sans GB,Microsoft YaHei,SimSun,sans-serif;
 }
 .message {
@@ -1047,10 +1050,10 @@ export default {
 .h5-form-box li .error {
   display: none;
   position: absolute;
-  bottom: -22px;
+  bottom: -9px;
   left: 10px;
   color: red;
-  font-size: 14px;
+  font-size: 12px;
 }
 .btn {
   width: 92vw;
@@ -1082,6 +1085,7 @@ export default {
           user-select: none; }
   .swal2-icon.swal2-success {
     border-color: #a5dc86;
+    overflow: hidden;
     }
     .swal2-icon.swal2-success [class^='swal2-success-circular-line'] {
       border-radius: 50%;
