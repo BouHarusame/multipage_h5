@@ -1,33 +1,55 @@
 <template>
   <div class="h5-wrapper" >
-    <div class="h5-title">客户信息</div>
+    <div class="h5-title">信息收集</div>
     <template v-if="!successMessage">
       <div class="h5-form">
-        <van-radio-group v-model="clientType">
-          <van-radio name="同行">同行</van-radio>
-          <van-radio name="直客">直客</van-radio>
-        </van-radio-group>
-        <van-cell title="单元格" @click="showPopup" value="内容" size="large" />
+        <!-- <div class="line">
+          <span>1.请选择</span>
+          <van-radio-group v-model="clientType">
+            <van-radio name="同行">同行</van-radio>
+            <van-radio name="直客">直客</van-radio>
+          </van-radio-group>
+        </div> -->
+        <!-- <div class="line">
+          <span>2.地区</span>
+           <div @click="showPopup" ><span v-if="provinceCity">请选择省、市</span>{{provinceCity}}</div>
+        </div> -->
         <van-popup
           v-model="show"
           position="bottom"
           :style="{ height: '270px' }"
         >
-        <van-area :area-list="areaList" :columns-num="2" :value="addr" @confirm="handleConfirm" />
+        <van-area :area-list="areaList" :columns-num="2" :value="addr" @cancel="handleCancel" @confirm="handleConfirm" />
         </van-popup>
         <ul class="h5-form-box" id="form">
           <li v-for="(item, index) in searchList" :key="index" :class="{'error': item.error}">
-            <span :class="item.icon"></span>
-            <input type="text"  v-model="item.value" @change="handleCheck(item)" class="input" :placeholder="item.placeholder">
-            <span class="error">{{item.errorMessage}}</span>
+            <template v-if="item.type === 'radio'">
+              <span class="label">{{item.title}}</span><span class="error">{{item.errorMessage}}</span>
+              <van-radio-group v-model="item.value" :class="item.class">
+                <van-radio v-for="name in item.nameList" :key="name" :name="name">{{name}}</van-radio>
+              </van-radio-group>
+            </template>
+            <template v-else-if="item.type === 'cell'">
+              <span class="label">{{item.title}}</span><span class="error">{{item.errorMessage}}</span>
+              <div @click="showPopup" class="cell-box" ><span v-if="!item.value">{{item.placeholder}}</span>{{item.value}}</div>
+            </template>
+            <template v-else-if="item.type === 'upload'">
+              <span class="label">{{item.title}}</span>
+              <van-uploader v-model="item.value" multiple :after-read="afterRead"/>
+            </template>
+            <template v-else>
+              <span class="label">{{item.title}}</span>
+              <input type="text"  v-model="item.value" @change="handleCheck(item)" class="input" :placeholder="item.placeholder">
+              <span class="error">{{item.errorMessage}}</span>
+            </template>
           </li>
         </ul>
-        <van-uploader v-model="fileList" multiple :after-read="afterRead"/>
-        <van-radio-group v-model="intention">
+        <!-- <van-uploader v-model="fileList" multiple :after-read="afterRead"/> -->
+        <!-- <van-radio-group v-model="intention">
           <van-radio name="1">感兴趣</van-radio>
           <van-radio name="2">希望进一步了解</van-radio>
           <van-radio name="2">希望马上合作使用</van-radio>
-        </van-radio-group>
+        </van-radio-group> -->
       </div>
       <div class="btn" @click="handleSend">提 交</div>
     </template>
@@ -65,6 +87,7 @@ export default {
       show: false,
       fileList: [],
       addr: '310000',
+      provinceCity: '',
       city: '',
       province: '',
       areaList: {
@@ -728,32 +751,66 @@ export default {
       searchList: [
         {
           value: '',
-          icon: 'icon3',
+          label: 'clientType',
+          title: '1.请选择',
+          type: 'radio',
+          class: 'horizontal',
+          nameList: ['同行', '直客'],
+          errorMessage: '公司地址不能为空',
+          error: false
+        },
+        {
+          value: '',
+          label: 'provinceCity',
+          title: '2.地区',
+          type: 'cell',
+          placeholder: '请选择省、市',
+          errorMessage: '地区不能为空',
+          error: false
+        },
+        {
+          value: '',
           label: 'compName',
+          type: 'input',
+          title: '3.公司名称',
           placeholder: '请输入公司名称',
           errorMessage: '公司地址不能为空',
           error: false
         }, {
           value: '',
-          icon: 'icon1',
           label: 'contacts',
+          type: 'input',
+          title: '4.联系人',
           placeholder: '请输入联系人姓名',
           errorMessage: '联系人姓名不能为空',
           error: false
         }, {
           value: '',
-          icon: 'icon1',
           label: 'position',
+          type: 'input',
+          title: '5.职位',
           placeholder: '请输入职位',
           errorMessage: '请输入职位不能为空',
           error: false
         }, {
           value: '',
-          icon: 'icon2',
           label: 'mobile',
+          type: 'input',
+          title: '6.联系方式',
           placeholder: '请输入合伙人手机号',
           errorMessage: '请输入正确的合伙人手机号',
           error: false
+        }, {
+          value: [],
+          label: 'fileList',
+          type: 'upload',
+          title: '7.名片上传'
+        },
+        {
+          value: '',
+          label: 'intention',
+          type: 'radio',
+          nameList: ['感兴趣', '希望进一步了解', '希望马上合作使用']
         }
       ],
       flag: true
@@ -761,11 +818,20 @@ export default {
   },
   methods: {
     handleConfirm (areaList) {
-      console.log(areaList)
       if (areaList.length !== 0) {
         this.province = areaList[0].name
         this.city = areaList[1].name
+        this.searchList.map(item => {
+          if (item.label === 'provinceCity') {
+            item.value = this.province + ' ' + this.city
+          }
+          return item
+        })
       }
+      this.show = false
+    },
+    handleCancel () {
+      this.show = false
     },
     showPopup () {
       this.show = true
@@ -817,7 +883,9 @@ export default {
         compName: '',
         contacts: '',
         position: '',
-        mobile: ''
+        mobile: '',
+        intention: '',
+        clientType: ''
       }
       for (let key in params) {
         this.searchList.forEach((item) => {
@@ -828,33 +896,29 @@ export default {
       }
       params.province = this.province
       params.city = this.city
-      params.intention = this.intention
-      params.clientType = this.clientType
       params.cardIds = this.cardIds
-      console.log(params)
-      // console.log(this.flag, isError)
-      if (this.flag && !isError) {
-        // console.log(111)
-        this.flag = false
-        $http('post', '/mini/import/collection', params)
-          .then(res => {
-            if (res && res.msg === 'success') {
-              this.successMessage = '操作成功'
-            }
-            if (res && res.msg === 'fail') {
-              // this.$message.error(res.verror)
-              this.errorMessage = res.verror
-              setTimeout(() => {
-                this.errorMessage = ''
-              }, 3000)
-            }
-            this.flag = true
-            this.loading = false
-          })
-          .catch(err => {
-            console.error(err)
-          })
-      }
+      console.log(params, isError)
+      // if (this.flag && !isError) {
+      //   this.flag = false
+      //   $http('post', '/mini/import/collection', params)
+      //     .then(res => {
+      //       if (res && res.msg === 'success') {
+      //         this.successMessage = '操作成功'
+      //       }
+      //       if (res && res.msg === 'fail') {
+      //         // this.$message.error(res.verror)
+      //         this.errorMessage = res.verror
+      //         setTimeout(() => {
+      //           this.errorMessage = ''
+      //         }, 3000)
+      //       }
+      //       this.flag = true
+      //       this.loading = false
+      //     })
+      //     .catch(err => {
+      //       console.error(err)
+      //     })
+      // }
     }
   }
 }
@@ -864,10 +928,10 @@ export default {
 <style scoped>
 .h5-wrapper {
   width: 100vw;
-  height: 100vh;
-  background: #1E3757 url('./images/bg.png');
-  background-size: cover;
-  /* overflow: hidden; */
+  background: #1E3757 url('./images/bg.png') repeat;
+  padding-bottom: 25px;
+  overflow: hidden;
+  font-family: Helvetica Neue,Helvetica,PingFang SC,Hiragino Sans GB,Microsoft YaHei,SimSun,sans-serif;
 }
 .message {
   font-size: 18px;
@@ -902,23 +966,16 @@ export default {
   margin-bottom: 6vh;
 }
 .h5-form {
-  width: 92vw;
-  background: rgba(255,255,255,0.1);
+  width: 82vw;
   margin: 0 auto;
-  border-radius: 10px;
   box-sizing: border-box;
-  padding: 6vh 13vw;
 }
 .h5-form-box {
   display: block;
   padding: 0;
 }
 .h5-form-box li {
-  display: flex;
-  align-items: center;
-  border-bottom: 1px solid #9E9476;
-  padding: 5px 5px;
-  margin-bottom: 4vh;
+  padding: 7px 5px;
   position: relative;
 }
 .h5-form-box li.error {
@@ -927,16 +984,65 @@ export default {
 .h5-form-box li.error .error {
   display: block;
 }
-.input {
-  background: transparent;
-  border: 0;
+.h5-form-box li .label {
+  display: block;
+  color: #FFFFFF;
+  font-size: 18px;
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+}
+.h5-form-box li .cell-box {
+  width: 100%;
+  height: 40px;
+  border-radius: 10px;
+  background: #ECF6FF;
+  color: #000000;
   font-size: 16px;
-  color: #FDE8A7;
-  width: 80%;
+  line-height: 40px;
+  text-indent: 15px;
+}
+.h5-form-box li .cell-box span {
+  color: #B9C4D0;
+}
+.h5-form-box li .horizontal {
+  display: flex;
+  align-items: center;
+  color: #c9c9c9;
+}
+.h5-form-box li >>> .van-uploader__upload {
+  background-color: transparent;
+  border: 1px solid #979797;
+  border-radius: 10px;
+}
+.h5-form-box li >>> .van-uploader__upload-icon {
+  color: #ffffff;
+}
+.h5-form-box li .horizontal .van-radio {
+  margin: 0 16px;
+}
+.h5-form-box li .van-radio {
+  margin-bottom: 16px
+}
+.h5-form-box li .van-radio >>> .van-radio__icon--checked .van-icon {
+  background-color: #FBB03B;
+  border-color: #FBB03B;
+}
+.h5-form-box li .van-radio >>> .van-radio__label {
+  color: #ffffff !important;
+}
+.input {
+  background: #ECF6FF;
+  border: 0;
+  border-radius: 10px;
+  font-size: 16px;
+  color: #000000;
+  width: 100%;
+  height: 40px;
   outline: 0;
+  text-indent: 15px;
 }
 .input::placeholder {
-  color: #B7B4AA;
+  color: #B9C4D0;
 }
 .h5-form-box li .error {
   display: none;
@@ -945,34 +1051,6 @@ export default {
   left: 10px;
   color: red;
   font-size: 14px;
-}
-.icon1{
-  display: block;
-  width: 16px;
-  height: 26px;
-  margin-right: 20px;
-  background: url('./images/name.png')no-repeat center / 100%;
-}
-.icon2 {
-  display: block;
-  width: 14px;
-  height: 26px;
-  margin-right: 22px;
-  background: url('./images/phone.png')no-repeat center / 100%;
-}
-.icon3 {
-  display: block;
-  width: 20px;
-  height: 26px;
-  margin-right: 16px;
-  background: url('./images/comp.png')no-repeat center / 100%;
-}
-.icon4 {
-  display: block;
-  width: 18px;
-  height: 26px;
-  margin-right: 18px;
-  background: url('./images/addr.png')no-repeat center / 100%;
 }
 .btn {
   width: 92vw;
