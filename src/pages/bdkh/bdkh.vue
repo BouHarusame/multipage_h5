@@ -294,6 +294,7 @@ export default {
           user-select: none; }
   .swal2-icon.swal2-success {
     border-color: #a5dc86;
+    overflow: hidden;
     }
     .swal2-icon.swal2-success [class^='swal2-success-circular-line'] {
       border-radius: 50%;

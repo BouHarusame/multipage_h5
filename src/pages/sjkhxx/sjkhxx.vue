@@ -35,7 +35,7 @@
             </template>
             <template v-else-if="item.type === 'upload'">
               <span class="label">{{item.title}}</span>
-              <van-uploader v-model="item.value" multiple @delete="handleDelete" :after-read="afterRead"/>
+              <van-uploader v-model="item.value" max-count="3" multiple @delete="handleDelete" :after-read="afterRead"/>
             </template>
             <template v-else>
               <span class="label">{{item.title}}</span>
@@ -797,8 +797,8 @@ export default {
           label: 'mobile',
           type: 'input',
           title: '6.联系方式',
-          placeholder: '请输入合伙人手机号',
-          errorMessage: '请输入正确的合伙人手机号',
+          placeholder: '请输入电话号码',
+          errorMessage: '请输入正确的电话号码',
           error: false
         }, {
           value: [],
@@ -990,7 +990,7 @@ export default {
 .h5-form-box li .label {
   display: block;
   color: #FFFFFF;
-  font-size: 18px;
+  font-size: 16px;
   letter-spacing: 2px;
   margin-bottom: 10px;
 }
@@ -1036,11 +1036,11 @@ export default {
 .input {
   background: #ECF6FF;
   border: 0;
-  border-radius: 10px;
-  font-size: 16px;
+  border-radius: 8px;
+  font-size: 14px;
   color: #000000;
   width: 100%;
-  height: 40px;
+  height: 34px;
   outline: 0;
   text-indent: 15px;
 }
@@ -1057,15 +1057,14 @@ export default {
 }
 .btn {
   width: 92vw;
-  height: 6vh;
-  min-height: 40px;
-  line-height: 2;
-  background: #FDE8A7;
-  border-radius: 10px;
+  height: 48px;
+  line-height: 48px;
+  background: #FBB03B;
+  border-radius: 8px;
   margin: 4vh auto 0;
   text-align: center;
-  color: #122C56;
-  font-size: 22px;
+  color: #ffffff;
+  font-size: 18px;
   font-weight: 500;
 }
 .swal2-icon {

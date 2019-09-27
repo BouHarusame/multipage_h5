@@ -2,7 +2,9 @@ const base = window.location.hostname
 // const HOST_DEV = 'http://192.168.10.253:7001/api'
 const HOST_DEV = 'http://www.roadshare.com:7001/api'
 // const HOST_PROD = 'http://192.168.10.253:7001/api'
-const HOST_PROD = window.location.protocol + '//' + window.location.hostname + '/api'
+// const HOST_PROD = 'http://www.roadshare.com:7001/api'
+// const HOST_PROD = window.location.protocol + '//' + window.location.hostname + '/api'
+const HOST_PROD = window.location.protocol + '//' + window.location.hostname + ':' + window.location.port + '/api'
 let FINAL_HOST
 if (base === 'localhost') {
   FINAL_HOST = HOST_DEV
